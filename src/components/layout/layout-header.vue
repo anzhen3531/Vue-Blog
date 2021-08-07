@@ -1,25 +1,48 @@
 <template>
     <div id="layout-header" :class="{'fixed':fixed,'hidden':hidden}" @click.stop="mobileShow=false">
+
         <div class="site-logo">
             <router-link to="/">
                 <img src="@/assets/site-logo.svg" alt="">
-                <p class="site-name">Gblog</p>
+                <p class="site-name">{{userName}}</p>
             </router-link>
         </div>
+
         <div class="menus-btn" @click.stop="mobileShow=!mobileShow">
             Menus
         </div>
+
         <div class="site-menus" :class="{'mobileShow':mobileShow}" @click.stop="mobileShow=!mobileShow">
-            <div class="menu-item header-search"><header-search/></div>
-            <div class="menu-item"><router-link to="/">首页</router-link></div>
-            <div class="menu-item hasChild">
+<!--          搜索框  -->
+            <div class="menu-item header-search" ><header-search/></div>
+            <div class="menu-item">
+              <router-link to="/">首页</router-link>
+            </div>
+
+<!--          创建一个关于文章的组件  取值分页 -->
+          <div class="menu-item hasChild">
                 <a href="#">文章</a>
+
                 <div class="childMenu" v-if="category.length">
-                    <div class="sub-menu" v-for="item in category" :key="item.title"><router-link :to="`/category/${item.title}`">{{item.title}}</router-link></div>
+                    <div class="sub-menu" v-for="(item, index) in category" :key="index">
+                      <a @click="SearchCategory(item)">{{item}}</a>
+                    </div>
                 </div>
             </div>
-            <div class="menu-item"><router-link to="/friend">友链</router-link></div>
-            <div class="menu-item"><router-link to="/about">关于</router-link></div>
+
+          <div class="menu-item">
+            <router-link to="/about" v-show="!loginActive">关于</router-link>
+            <router-link to="/addBlog" v-show="loginActive">添加</router-link>
+          </div>
+
+          <div class="menu-item" v-show="isActive">
+            <router-link :to="`/edit/${id}`">编辑</router-link>
+          </div>
+
+          <div class="menu-item" >
+            <router-link to="/login" v-show="!loginActive" >登录</router-link>
+            <a v-show="loginActive" @click="outLogin">退出</a>
+          </div>
         </div>
     </div>
 </template>
@@ -27,26 +50,63 @@
 <script>
     import HeaderSearch from '@/components/header-search'
     import {fetchCategory} from '../../api'
+    import {queryCategory, queryLikeByTitle} from "@/api/blog";
+    import {outLoginUser} from "@/api/login";
     export default {
         name: "layout-header",
         components: {HeaderSearch},
         data() {
             return {
+                // id: 0,
+                hasLogin: false,
                 lastScrollTop: 0,
                 fixed: false,
                 hidden: false,
-                category: [],
-                mobileShow: false
+                category: [],   // 标题数据
+                mobileShow: false,
+                name: "请登录",
+                active: false   // 表示登录状态  默认就是没有登录
             }
         },
-        mounted(){
+      computed: {
+          userName() {
+            console.log(" 登录状态     ", !(this.$store.getters.getUserInfo === null))
+            if (this.$store.getters.getUserInfo !== null) {
+              console.log(" 已经登录了  进行赋值操作")
+              console.log(this.$store.getters.getUserInfo)
+              console.log(this.$store.getters.getUserInfo.name);
+              this.active = true
+              return this.$store.getters.getUserInfo.name
+            }else{
+              return this.name
+            }
+          },
+          loginActive() {
+              return this.$store.getters.getUserInfo !== null;
+          },
+          isActive(){
+            // 判断当前路由是不是文章查看
+            console.log("当前页面是不是 article", this.$route.name === "article");
+            return this.$route.name  === "article";
+          },
+          id(){
+            console.log(this.$route.params.id)
+            return this.$route.params.id
+          }
+
+      },
+      mounted(){
+          // 监听窗口滚动
             window.addEventListener('scroll', this.watchScroll)
             this.fetchCategory()
+
         },
-        beforeDestroy () {
+      beforeDestroy () {
             window.removeEventListener("scroll", this.watchScroll)
         },
+
         methods: {
+          // 滚动
             watchScroll() {
                 let scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
                 if (scrollTop===0){
@@ -61,11 +121,37 @@
                 this.lastScrollTop = scrollTop
             },
             fetchCategory() {
-                fetchCategory().then(res => {
-                    this.category = res.data
-                }).catch(err => {
+                  queryCategory().then(res => {
+                    console.log(res.data.titles);
+                      this.category = res.data.titles
+                  }).catch(err => {
                     console.log(err)
-                })
+                  })
+            },
+            SearchCategory(item){
+              console.log("点击了 一次")
+              // 跳转首页  将数据 传递给  主页
+              queryLikeByTitle(item).then(res => {
+                console.log(res.data.items);
+                this.$store.commit("SAVE_SEARCH_INFO", res.data.items)
+                this.$router.push({name:'category',params:{cate:item}});
+              })
+            },
+            outLogin() {
+              // 退出登录
+              // 删除用户信息
+              outLoginUser().then(reuslt => {
+                console.log(reuslt);
+                console.log("删除成功")
+                this.$store.commit("REMOVE")
+                console.log("outLogin -> "+this.name);
+                this.name = "请登录"
+                // 修改标志位
+                this.active = false
+                this.router.push("/")
+              }).catch( error => {
+                console.log(error)
+              })
             }
         }
     }

@@ -1,37 +1,28 @@
 <template>
     <div class="home">
-        <banner isHome="true"></banner>
+<!--      <layout-header></layout-header>-->
+        <banner></banner>
         <div class="site-content animate">
-            <!--通知栏-->
-            <div class="notify">
-                <div class="search-result" v-if="hideSlogan">
-                    <span v-if="searchWords">搜索结果："{{searchWords}}" 相关文章</span>
-                    <span v-else-if="category">分类 "{{category}}" 相关文章</span>
-                </div>
-                <quote v-else>{{notice}}</quote>
+<!--           修改通知 -->
+          <!--通知栏-->
+          <div class="notify">
+            <div class="search-result" v-if="hideSlogan">
+<!--              搜索和分类都是从这个search 组件 传递过来的 -->
+              <span v-if="searchWords">搜索结果："{{searchWords}}" 相关文章</span>
+              <span v-else-if="category">分类 "{{category}}" 相关文章</span>
             </div>
-
-            <!--焦点图-->
-            <div class="top-feature" v-if="!hideSlogan">
-                <section-title>
-                    <div style="display: flex;align-items: flex-end;">聚焦<small-ico></small-ico></div>
-                </section-title>
-                <div class="feature-content">
-                    <div class="feature-item" v-for="item in features" :key="item.title">
-                        <Feature :data="item"></Feature>
-                    </div>
-                </div>
-            </div>
+            <quote v-else>{{notice}}</quote>
+          </div>
             <!--文章列表-->
             <main class="site-main" :class="{'search':hideSlogan}">
-                <section-title v-if="!hideSlogan">推荐</section-title>
-                <template v-for="item in postList">
+                <section-title v-if="!hideSlogan">博客</section-title>
+                <template v-for="item in searchInfo">
                     <post :post="item" :key="item.id"></post>
                 </template>
             </main>
 
             <!--加载更多-->
-            <div class="more" v-show="hasNextPage">
+            <div class="more"  v-show="hasNextPage">
                 <div class="more-btn" @click="loadMore">More</div>
             </div>
         </div>
@@ -40,75 +31,90 @@
 
 <script>
     import Banner from '@/components/banner'
-    import Feature from '@/components/feature'
     import sectionTitle from '@/components/section-title'
     import Post from '@/components/post'
     import SmallIco from '@/components/small-ico'
     import Quote from '@/components/quote'
-    import {fetchFocus, fetchList} from '../api'
-
+    import { queryList} from "@/api/blog"
+    import LayoutHeader from "@/components/layout/layout-header";
     export default {
-        name: 'Home',
-        props: ['cate', 'words'],
-        data() {
-            return {
-                features: [],
-                postList: [],
-                currPage: 1,
-                hasNextPage: false
-            }
-        },
-        components: {
-            Banner,
-            Feature,
-            sectionTitle,
-            Post,
-            SmallIco,
-            Quote
-        },
-        computed: {
-            searchWords() {
-                return this.$route.params.words
-            },
-            category() {
-                return this.$route.params.cate
-            },
-            hideSlogan() {
-                return this.category || this.searchWords
-            },
-            notice() {
-                return this.$store.getters.notice
-            }
-        },
-        methods: {
-            fetchFocus() {
-                fetchFocus().then(res => {
-                    this.features = res.data || []
-                }).catch(err => {
-                    console.log(err)
-                })
-            },
-            fetchList() {
-                fetchList().then(res => {
-                    this.postList = res.data.items || []
-                    this.currPage = res.data.page
-                    this.hasNextPage = res.data.hasNextPage
-                }).catch(err => {
-                    console.log(err)
-                })
-            },
-            loadMore() {
-                fetchList({page:this.currPage+1}).then(res => {
-                    this.postList = this.postList.concat(res.data.items || [])
-                    this.currPage = res.data.page
-                    this.hasNextPage = res.data.hasNextPage
-                })
-            }
-        },
-        mounted() {
-            this.fetchFocus();
-            this.fetchList();
+      name: 'Home',
+      props: ['cate', 'words'],  //  组件之间数据传递
+      data() {
+        return {
+          // features: [],   //
+          postList: [],   // 文章页面
+          currPage: 1,   // 当前页
+          hasNextPage: false,
+          isHome: false,
+          times: {},
         }
+      },
+      components: {
+        LayoutHeader,
+        Banner,
+        sectionTitle,   // 章节标题
+        Post,
+        SmallIco,
+        Quote
+      },
+      // 计算属性
+      computed: {
+        searchWords() {
+          return this.$route.params.words
+        },
+        category() {
+          return this.$route.params.cate
+        },
+        hideSlogan() {
+          return this.category || this.searchWords
+        },
+        notice() {
+          return this.$store.getters.notice
+        },
+        // 通过计算属性 进行数据展示
+        searchInfo(){
+          if (this.$route.name === "home"){
+            // 在首页时显示当前页面信息
+            return this.postList
+          }else {
+            return this.$store.getters.getSearchInfo;
+          }
+        }
+      },
+      //  周期函数 只会调用一次
+      mounted() {
+        this.fetchList();
+        console.log("home  mounted 调用")
+      },
+      destroyed() {
+        // 销毁函数
+        console.log("销毁 函数 ")
+      },
+      methods: {
+        // 请求虚拟数据的  文章
+        fetchList() {
+          // 判断如果有url 有数据的话就直接 模糊查询
+          // if (this.searchWords)
+          queryList({currentPage:this.currPage, pageSize: 2}).then(res => {
+            this.postList = res.data.items
+            // 为什么要传递这个信息
+            this.currPage = res.data.currPage
+            this.hasNextPage = res.data.hasNextPage
+          })
+        },
+        // 请求虚拟数据分页
+        loadMore() {
+          // 传入参数为  当前页面 + 1
+          queryList({currentPage :this.currPage+1, pageSize:2}).then(res => {
+            this.postList = this.postList.concat(res.data.items)
+            this.currPage = res.data.currPage
+            this.hasNextPage = res.data.hasNextPage
+          }).catch(err => {
+            console.log(err);
+          })
+        },
+      },
     }
 </script>
 <style scoped lang="less">

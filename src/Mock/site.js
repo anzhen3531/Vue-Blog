@@ -2,16 +2,20 @@ const Mock = require('mockjs');
 export default [
     // 站点信息
     {
+        // 首页数据加载  默认数据
         url: '/site',
         type: 'get',
         response: () => {
             return {
                 code: 20000,
                 data: {
-                    avatar: 'https://s2.ax1x.com/2020/01/17/1SCadg.png',
+                    // 这个头像应该由后台进行请求  不应该由 默认生成
+                    avatar: 'https://dss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=2062164223,3783917881&fm=26&gp=0.jpg',
+                    // 签名  数据
                     slogan: 'The way up is not crowded, and most chose ease.',
                     name: 'FZY′blog',
                     domain: 'https://www.fengziy.cn',
+                    // 通知
                     notice: '本博客的Demo数据由Mockjs生成',
                     desc: '一个It技术的探索者'
                 }

@@ -1,31 +1,40 @@
 <template>
     <article class="post post-list">
         <div class="post-entry">
-            <div class="feature">
-                <router-link :to="`/article/${post.id}`">
-                    <img :src="post.banner"/>
+            <div class="feature" >
+<!--              路由跳转  -->
+                <router-link :to="`/article/${info.id}`">
+                    <img :src="info.banner"/>
                 </router-link>
             </div>
+
             <h1 class="entry-title">
-                <router-link :to="`/article/${post.id}`"><span v-if="post.isTop" style="color:#ff6d6d;font-weight:600">[置顶] </span>{{post.title}}</router-link>
+                <router-link :to="`/article/${info.id}`"><span v-if="info.isTop" style="color:#ff6d6d;font-weight:600">[置顶] </span>{{info.title}}</router-link>
             </h1>
+
             <div class="p-time">
-                <i class="iconfont iconmeditor-time"></i> {{post.pubTime | parseTime}}<i v-if="post.isHot" class="iconfont iconfire" style="margin-left: 5px;color: #ff6d6d;"></i>
+                <i class="iconfont iconmeditor-time"></i> {{info.createTime}} <i v-if="info.isHot" class="iconfont iconfire" style="margin-left: 5px;color: #ff6d6d;"></i>
             </div>
-            <p class="summary">{{post.summary}}</p>
+
+            <p class="summary">{{info.summary}}</p>
             <footer class="entry-footer">
                 <div class="post-more">
-                    <router-link :to="`/article/${post.id}`"><i class="iconfont iconfish-li" style="font-size: 25px;"></i></router-link>
+                    <router-link :to="`/article/${info.id}`"><i class="iconfont iconfish-li" style="font-size: 25px;"></i></router-link>
                 </div>
                 <div class="info-meta">
                     <div class="comnum">
                         <span>
                             <i class="iconfont iconcomment"></i>
-                            <a href="https://zhebk.cn/Web/Akina.html">{{post.commentsCount}} 条评论</a>
+                            <a href="https://zhebk.cn/Web/Akina.html">{{info.commentsCount}} 条评论</a>
                         </span>
                     </div>
                     <div class="views">
-                        <span><i class="iconfont iconeyes"></i>{{post.viewsCount}} 热度</span>
+                        <span><i class="iconfont iconeyes"></i>{{info.viewsCount}} 热度</span>
+                    </div>
+                    <div class="edit">
+                      <i class="iconfont iconcategory">
+                        <router-link :to="`/update/${info.id}`" class="edit-button">修改</router-link>
+                      </i>
                     </div>
                 </div>
             </footer>
@@ -37,12 +46,38 @@
 <script>
 
     export default {
-        name: "post",
-        props: {
-            post: {
-                type: Object
-            }
+      name: "post",
+      props: {
+        post: {
+          type: Object
         }
+      },
+      data(){
+        return {
+          info: {}
+        }
+      },
+      watch: {
+        info: {
+          handler: function (newVal){
+            console.log("进入  post 内")
+            console.log('info', newVal)
+            this.info = newVal;
+            console.log(this.info)
+          },
+          deep: true
+        },
+      },
+      created() {
+        console.log("post ->  create")
+      },
+      mounted() {
+        this.info = this.post;
+        console.log(this.info.createTime)
+      },
+      destroyed() {
+        console.log(" post   ——》 销毁");
+      }
     }
 </script>
 
@@ -155,10 +190,16 @@
                     float: left
                 }
             }
-
             .comnum {
                 float: left;
             }
+            .edit-button{
+              margin-left: 8px;
+              border: none;
+              font-size: 14px;
+              //opacity: 0.3;
+            }
+
         }
 
     }

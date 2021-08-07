@@ -1,5 +1,6 @@
 <template>
     <div class="about">
+<!--      <layout-header></layout-header>-->
         <div class="site-content">
             <div class="content-warp">
                 <div class="about-site about-info">
@@ -35,9 +36,7 @@
 </template>
 <script>
     import sectionTitle from '@/components/section-title'
-    import {getTime,getTimeInterval} from '@/utils'
-    // import Quote from "@/components/quote";
-    // import {fetchFriend} from '../api'
+    import LayoutHeader from "@/components/layout/layout-header";
     export default {
         name: "About",
         data() {
@@ -46,8 +45,9 @@
             }
         },
         components: {
-            // Quote,
-            sectionTitle
+            sectionTitle,
+          LayoutHeader
+
         },
         methods: {},
         mounted() {
@@ -56,7 +56,7 @@
 </script>
 <style scoped lang="less">
     .about {
-        padding-top: 40px;
+        padding-top: 80px;
     }
 
     .content-warp {

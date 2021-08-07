@@ -1,9 +1,13 @@
 const Mock = require('mockjs');
 const count = 100
 
-const baseContent = '<p>I am testing data, I am testing data.</p><p><img src="https://wpimg.wallstcn.com/4c69009c-0fd4-4153-b112-6cb53d1cf943"></p>'
+const baseContent = '<p>I am testing data, I am testing data.</p>' +
+    '<p>' +
+    '<img src="https://wpimg.wallstcn.com/4c69009c-0fd4-4153-b112-6cb53d1cf943">' +
+    '</p>'
 const image_uri = 'https://wpimg.wallstcn.com/e4558086-631c-425c-9430-56ffb46e70b3'
 
+// 假数据使用到的图片
 const banners = [
     'https://s1.ax1x.com/2020/05/14/YDhagx.jpg',
     'https://s1.ax1x.com/2020/05/14/YDhU81.jpg',
@@ -11,18 +15,21 @@ const banners = [
     'https://s1.ax1x.com/2020/05/14/YDhoVg.jpg',
     'https://s1.ax1x.com/2020/05/14/YD4FR1.jpg'
 ]
+
+// 都是一些固定数据
 const List = [{
-    id: 0,
-    isTop: true,
-    banner: banners[0],
-    isHot: true,
-    pubTime: +Mock.Random.date('T'),
+    id: 0,   // id
+    isTop: true,  // 是否是制定
+    banner: banners[0],   // 图片
+    isHot: true,   // 是否是热的
+    pubTime: +Mock.Random.date('T'),  // 创建时间
     title: '看一遍闭着眼都会安装Lua了',
     summary: 'Lua 是一种轻量小巧的脚本语言，能为应用程序提供灵活的扩展和定制功能。',
     content: '',
-    viewsCount: 4045,
-    commentsCount: 99
+    viewsCount: 4045,   // 热度
+    commentsCount: 99   // 评论
 }]
+
 for (let i = 0; i < count; i++) {
     List.push(Mock.mock({
         id: '@increment',
@@ -46,6 +53,7 @@ export default [
             let {page = 1, size = 10} = config.query;
             page = page instanceof Number ? page : parseInt(page)
             size = size instanceof Number ? size : parseInt(size)
+            // 确认页数总数
             const pageList = List.filter((item, index) => index < size * page && index >= size * (page - 1));
             return {
                 code: 20000,

@@ -1,4 +1,6 @@
 const Mock = require('mockjs');
+
+// 文章假数据  标题假数据
 export default [
     {
         url: '/category',

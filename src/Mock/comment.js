@@ -1,5 +1,6 @@
 const Mock = require('mockjs');
 
+// 博客展示假数据
 const banners = [
     'https://s1.ax1x.com/2020/05/14/YDhagx.jpg',
     'https://s1.ax1x.com/2020/05/14/YDhU81.jpg',

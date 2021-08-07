@@ -1,4 +1,6 @@
 const Mock = require('mockjs');
+
+// 聚焦页面假数据
 export default [
     {
         url: '/focus/list',

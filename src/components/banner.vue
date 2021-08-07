@@ -1,25 +1,23 @@
 <template>
-    <div id="banner" :class="{'home-banner':isHome}">
+    <div id="banner" :class="{'home-banner':true}">
+<!--      头像信息 -->
         <div class="banner-img" :style="{'background-image': `url(${src})`}">
-            <template v-if="isHome">
+            <template>
+<!--             数据有请求过来    -->
                 <!--博主信息-->
-                <div class="focusinfo">
+                <div class="focusinfo" v-show="!active">
                     <!-- 头像 -->
+<!--                  判断活跃状态 如果没有登录则 -->
                     <div class="header-tou">
-                        <router-link to="/"><img :src="websiteInfo.avatar"></router-link>
+                        <router-link to="/">
+                          <img :src="websiteInfoComputed.head">
+                        </router-link>
                     </div>
                     <!-- 简介 -->
                     <div class="header-info">
-                        <p>{{websiteInfo.slogan}}</p>
-                    </div>
-                    <!-- 社交信息 -->
-                    <div class="top-social">
-                        <div v-for="item in socials" :key="item.id" :title="item.title"><a :href="item.href" target="_blank" :style="{'color':item.color}"><i class="iconfont" :class="item.icon"></i></a></div>
+                        <p>{{websiteInfoComputed.slogan}}</p>
                     </div>
                 </div>
-                <!--左右倾斜-->
-                <div class="slant-left"></div>
-                <div class="slant-right"></div>
             </template>
         </div>
     </div>
@@ -30,35 +28,33 @@
         name: "banner",
         data(){
             return{
-                websiteInfo: {},
-                socials: []
+                websiteInfo: {},  //  返回信息  网站基本信息
+                socials: [],   // 定义社交信息   入qq
             }
         },
         props:{
+          // 博主信息由服务器请求过来
             src:{
                 type: String,
-                default: 'https://s1.ax1x.com/2020/05/23/YxaLMq.jpg'
-            },
-            isHome:{
-                type: [Boolean,String],
-                default: false
+                  // 默认显示的图片
+               // 后台图片
+                default: 'https://w.wallhaven.cc/full/pk/wallhaven-pk8pzj.png'
             }
         },
-        created(){
-            this.getWebSiteInfo()
-            this.getSocial()
-        },
-        methods:{
-            getSocial(){
-                this.$store.dispatch('getSocials').then(data =>{
-                    this.socials = data
-                })
-            },
-            getWebSiteInfo(){
-                this.$store.dispatch('getSiteInfo').then(data =>{
-                    this.websiteInfo = data
-                })
+        computed: {
+          active(){
+            console.log("banner  -> ",this.$store.getters.token === null)
+            return (this.$store.getters.token === null)
+          },
+          websiteInfoComputed(){
+            console.log("banner into web info   ->  " ,this.$store.getters.getUserInfo);
+            if ( this.$store.getters.getUserInfo === null){
+              return this.websiteInfo
+            }else{
+              this.websiteInfo = this.$store.getters.getUserInfo
+              return this.websiteInfo
             }
+          }
         }
     }
 </script>
@@ -71,14 +67,17 @@
         width: 100%;
         height: 500px;
         .banner-img{
+          //
             width: inherit;
             height: inherit;
             background-position: center;
             background-size: cover;
             background-repeat: no-repeat;
+          //
             transition: all 0.2s linear;
             overflow: hidden;
             &:hover {
+                //transform: scale(1.1, 1.1);
                 transform: scale(1.1, 1.1);
                 filter: contrast(130%);
             }

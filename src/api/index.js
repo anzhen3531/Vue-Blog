@@ -16,6 +16,8 @@ export function fetchFocus() {
     })
 }
 
+
+
 export function fetchCategory() {
     return request({
         url: '/category',
